@@ -41,7 +41,7 @@ pipeline {
                 if ! minikube status | grep -q "apiserver: Running"; then
                     echo "Minikube is not running. Starting now..."
                     
-                    minikube start --driver=docker --memory=4096 --cpus=2
+                    minikube start --driver=docker --memory=3072 --cpus=2
                     
                     echo "Waiting for Kubernetes API to be ready..."
                     kubectl wait --for=condition=Ready nodes --all --timeout=120s
