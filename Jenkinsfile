@@ -40,22 +40,33 @@ pipeline {
                 sh '''
                 if ! minikube status | grep -q "apiserver: Running"; then
                     echo "Minikube is not running. Starting now..."
-                    minikube start --driver=docker 
+                    
+                    minikube start --driver=docker --memory=4096 --cpus=2
+                    
+                    echo "Waiting for Kubernetes API to be ready..."
+                    kubectl wait --for=condition=Ready nodes --all --timeout=120s
+                else
+                    echo "Minikube already running."
                 fi
                 '''
             }
-        }
+      }
 
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                # Load latest image into Minikube
-                # minikube image load yasareddy02/my-k8s-app:latest
-
-                # Apply manifests
+                echo "Loading Docker image into Minikube..."
+                minikube image load yasareddy02/my-k8s-app:${BUILD_NUMBER}
+        
+                echo "Applying Kubernetes manifests..."
                 kubectl apply -f k8s/deployment.yaml
                 kubectl apply -f k8s/service.yaml
-                minikube service my-k8s-app-service
+        
+                echo "Checking pods..."
+                kubectl get pods -o wide
+        
+                echo "Service URL:"
+                minikube service my-k8s-app-service --url
                 '''
             }
         }
