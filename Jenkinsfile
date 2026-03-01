@@ -5,8 +5,8 @@ pipeline {
 
         stage('Checkout from GitHub') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/laxmi916/node-k8s-app.git'
+                git branch: 'main',
+                    url: 'https://github.com/rushindrareddyyasa/node-k8s-app.git'
             }
         }
 
@@ -20,14 +20,18 @@ pipeline {
             steps {
                 sh '''
                 docker build -t my-k8s-app:${BUILD_NUMBER} .
-                docker tag my-k8s-app:${BUILD_NUMBER} laxmi916/my-k8s-app:latest
+                docker tag my-k8s-app:${BUILD_NUMBER} yasareddy02/my-k8s-app:latest
                 '''
             }
         }
 
-        stage('Push Docker Image') {
+       stage('Push Docker Image') {
             steps {
-                sh 'docker push laxmi916/my-k8s-app:latest'
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+                        sh 'docker push yasareddy02/my-k8s-app:latest'
+                    }
+                }
             }
         }
 
@@ -36,7 +40,7 @@ pipeline {
                 sh '''
                 if ! minikube status | grep -q "apiserver: Running"; then
                     echo "Minikube is not running. Starting now..."
-                    minikube start --driver=docker --memory=2048 --cpus=2
+                    minikube start --driver=docker 
                 fi
                 '''
             }
@@ -46,11 +50,11 @@ pipeline {
             steps {
                 sh '''
                 # Load latest image into Minikube
-                # minikube image load laxmi916/my-k8s-app:latest
+                # minikube image load yasareddy02/my-k8s-app:latest
 
                 # Apply manifests
-                minikube kubectl -- apply -f k8s/deployment.yaml
-                minikube kubectl -- apply -f k8s/service.yaml
+                kubectl apply -f k8s/deployment.yaml
+                kubectl apply -f k8s/service.yaml
                 minikube service my-k8s-app-service
                 '''
             }
