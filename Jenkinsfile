@@ -36,21 +36,26 @@ pipeline {
         }
 
         stage('Start Minikube if not running') {
-            steps {
-                sh '''
-                if ! minikube status | grep -q "apiserver: Running"; then
-                    echo "Minikube is not running. Starting now..."
-                    
-                    minikube start --driver=docker --memory=3072 --cpus=2
-                    
-                    echo "Waiting for Kubernetes API to be ready..."
-                    kubectl wait --for=condition=Ready nodes --all --timeout=120s
-                else
-                    echo "Minikube already running."
-                fi
-                '''
-            }
-      }
+    steps {
+        sh '''
+        echo "Checking Minikube status..."
+
+        if ! minikube status | grep -q "apiserver: Running"; then
+            echo "Minikube not healthy. Deleting old profile..."
+
+            minikube delete || true
+
+            echo "Starting fresh Minikube..."
+            minikube start --driver=docker --memory=3072 --cpus=2
+
+            echo "Waiting for node to be ready..."
+            kubectl wait --for=condition=Ready nodes --all --timeout=180s
+        else
+            echo "Minikube already running and healthy."
+        fi
+        '''
+    }
+}
 
         stage('Deploy to Kubernetes') {
             steps {
