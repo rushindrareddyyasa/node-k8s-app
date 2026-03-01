@@ -20,7 +20,7 @@ pipeline {
             steps {
                 sh '''
                 docker build -t my-k8s-app:${BUILD_NUMBER} .
-                docker tag my-k8s-app:${BUILD_NUMBER} yasareddy02/my-k8s-app:latest
+                docker tag my-k8s-app:${BUILD_NUMBER} yasareddy02/my-k8s-app:${BUILD_NUMBER}
                 '''
             }
         }
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-                        sh 'docker push yasareddy02/my-k8s-app:latest'
+                        sh 'docker push yasareddy02/my-k8s-app:${BUILD_NUMBER}'
                     }
                 }
             }
