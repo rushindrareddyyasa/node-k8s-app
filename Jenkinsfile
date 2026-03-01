@@ -58,22 +58,22 @@ pipeline {
 }
 
         stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                echo "Loading Docker image into Minikube..."
-                minikube image load yasareddy02/my-k8s-app:${BUILD_NUMBER}
-        
-                echo "Applying Kubernetes manifests..."
-                kubectl apply -f k8s/deployment.yaml
-                kubectl apply -f k8s/service.yaml
-        
-                echo "Checking pods..."
-                kubectl get pods -o wide
-        
-                echo "Service URL:"
-                minikube service my-k8s-app-service --url
-                '''
-            }
-        }
+    steps {
+        sh '''
+        echo "Loading Docker image into Minikube..."
+        minikube image load yasareddy02/my-k8s-app:${BUILD_NUMBER}
+
+        echo "Applying Kubernetes manifests..."
+        minikube kubectl -- apply -f k8s/deployment.yaml
+        minikube kubectl -- apply -f k8s/service.yaml
+
+        echo "Checking pods..."
+        minikube kubectl -- get pods -o wide
+
+        echo "Service URL:"
+        minikube service my-k8s-app-service --url
+        '''
+    }
+}
     }
 }
